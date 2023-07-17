@@ -1,9 +1,16 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-void main() {
-  runApp(const Tracka());
+import 'auth/login.dart';
+
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(Tracka());
 }
 
 class Tracka extends StatelessWidget {
@@ -13,15 +20,7 @@ class Tracka extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Tracka'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Text('Tracka'),
-        ),
-      ),
+      home: Scaffold(body: Login()),
     );
   }
 }
