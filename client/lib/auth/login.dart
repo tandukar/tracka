@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'dart:core';
+import '../TrackaMainPage.dart';
 import '../widgets/password_field_widget.dart';
 import '../widgets/button_widget.dart';
 import '../widgets/email_field_widget.dart';
@@ -19,6 +20,9 @@ final emailController = TextEditingController();
 //
 final passwordController = TextEditingController();
 bool passText = true;
+//
+final email = emailController.text;
+final password = passwordController.text;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,45 +46,63 @@ class _LoginPageState extends State<LoginPage> {
       home: Container(
         constraints: const BoxConstraints.expand(),
         decoration: const BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("assets/logRegBg.png"), fit: BoxFit.cover)),
+          image: DecorationImage(
+            image: AssetImage("assets/logRegBg.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Center(
-              child: SingleChildScrollView(
-                child: Form(
-                    key: formKey,
-                    child: Padding(
-                      padding: const EdgeInsets.all(13),
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Form(
+              key: formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height / 3),
+                    Expanded(
                       child: Card(
                         elevation: 10,
                         color: Colors.white.withOpacity(0.97),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(70),
+                          ),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(13),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(height: 15),
+                              SizedBox(height: 30),
+                              Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 33,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(height: 30),
                               EmailFieldWidget(controller: emailController),
                               SizedBox(height: 20),
                               PasswordFieldWidget(
                                   controller: passwordController),
-                              SizedBox(height: 20),
+                              SizedBox(height: 50),
                               buildButton(),
-                              SizedBox(height: 20),
+                              SizedBox(height: 30),
                               buildNoAccount(),
-                              SizedBox(height: 15),
                             ],
                           ),
                         ),
                       ),
-                    )),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -91,15 +113,14 @@ class _LoginPageState extends State<LoginPage> {
           final form = formKey.currentState!;
 
           if (form.validate()) {
-            final email = emailController.text;
-            final password = passwordController.text;
-
             ScaffoldMessenger.of(context)
               ..removeCurrentSnackBar()
               ..showSnackBar(SnackBar(
-                content:
-                    Text('Your email is $email\nYour password is $password'),
+                content: Text('Your email is $email'),
               ));
+            //
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => TrackaMain()));
           }
         },
       );

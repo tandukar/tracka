@@ -1,3 +1,4 @@
+import 'package:client/TrackaMainPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,7 +21,7 @@ class Tracka extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(body: Login()),
+      home: Scaffold(body: TrackaMain()),
     );
   }
 }
