@@ -36,7 +36,7 @@ class _EmailFieldWidgetState extends State<EmailFieldWidget> {
         decoration: InputDecoration(
           hintText: 'Email',
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(15),
           ),
           prefixIcon: Icon(Icons.mail),
           suffixIcon: widget.controller.text.isEmpty

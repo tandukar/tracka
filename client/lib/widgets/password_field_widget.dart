@@ -64,7 +64,7 @@ class _PasswordFieldWidgetState extends State<PasswordFieldWidget> {
         decoration: InputDecoration(
           hintText: 'Password',
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(15),
           ),
           prefixIcon: Icon(Icons.lock),
           suffixIcon: IconButton(
