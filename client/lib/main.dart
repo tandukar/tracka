@@ -1,8 +1,7 @@
-import 'package:client/TrackaMainPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'auth/login.dart';
+import 'trackaMainPage.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,10 +1,12 @@
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 
-import 'dart:core';
-import '../TrackaMainPage.dart';
-import '../widgets/password_field_widget.dart';
+import '../trackaMainPage.dart';
 import '../widgets/button_widget.dart';
 import '../widgets/email_field_widget.dart';
+import '../widgets/password_field_widget.dart';
+import 'register.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -41,68 +43,58 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Container(
-        constraints: const BoxConstraints.expand(),
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/logRegBg.png"),
-            fit: BoxFit.cover,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage("assets/loginBg.png"),
+          fit: BoxFit.cover,
         ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Center(
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(children: [
+          SingleChildScrollView(
             child: Form(
               key: formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(0),
-                child: Column(
-                  children: [
-                    SizedBox(height: MediaQuery.of(context).size.height / 3),
-                    Expanded(
-                      child: Card(
-                        elevation: 10,
-                        color: Colors.white.withOpacity(0.97),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(70),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(13),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(height: 30),
-                              Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontSize: 33,
-                                  fontWeight: FontWeight.w700,
-                                ),
+              child: Column(
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  SizedBox(
+                    child: Card(
+                      elevation: 0,
+                      color: Colors.transparent,
+                      child: Padding(
+                        padding: const EdgeInsets.all(13),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            SizedBox(height: 120),
+                            Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 33,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.teal[500],
                               ),
-                              SizedBox(height: 30),
-                              EmailFieldWidget(controller: emailController),
-                              SizedBox(height: 20),
-                              PasswordFieldWidget(
-                                  controller: passwordController),
-                              SizedBox(height: 50),
-                              buildButton(),
-                              SizedBox(height: 30),
-                              buildNoAccount(),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: 30),
+                            EmailFieldWidget(controller: emailController),
+                            SizedBox(height: 20),
+                            PasswordFieldWidget(controller: passwordController),
+                            SizedBox(height: 50),
+                            buildButton(),
+                            SizedBox(height: 30),
+                            buildNoAccount(),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
+        ]),
       ),
     );
   }
@@ -113,12 +105,11 @@ class _LoginPageState extends State<LoginPage> {
           final form = formKey.currentState!;
 
           if (form.validate()) {
-            ScaffoldMessenger.of(context)
-              ..removeCurrentSnackBar()
-              ..showSnackBar(SnackBar(
-                content: Text('Your email is $email'),
-              ));
-            //
+            // ScaffoldMessenger.of(context)
+            //   ..removeCurrentSnackBar()
+            //   ..showSnackBar(SnackBar(
+            //     content: Text('Your email is $email'),
+            //   ));
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => TrackaMain()));
           }
@@ -128,10 +119,13 @@ class _LoginPageState extends State<LoginPage> {
   Widget buildNoAccount() => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Don\'t have an account?'),
+          Text('Don\'t have an account?', style: TextStyle(fontSize: 16)),
           TextButton(
-            child: Text('Register'),
-            onPressed: () {},
+            child: Text('Register', style: TextStyle(fontSize: 16)),
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Register()));
+            },
           ),
         ],
       );
