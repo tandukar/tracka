@@ -27,7 +27,15 @@ exports.createUser = async(req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
+exports.getUser = async(req, res) => {
+    try {
+        const user = await User.find();
+        return res.status(200).json({ message: "User Created Successfully", user });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
 exports.loginUser = async(req, res) => {
     try {
         const { email, password } = req.body;
