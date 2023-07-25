@@ -3,6 +3,8 @@ import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+void main() => runApp(TrackaMain());
+
 class Task {
   final String title;
   final String time;
@@ -17,24 +19,23 @@ class Task {
 }
 
 String formatTime(TimeOfDay timeOfDay) {
-  DateTime now = DateTime.now();
-  DateTime parsedTime = DateTime(
+  final now = DateTime.now();
+  final parsedTime = DateTime(
     now.year,
     now.month,
     now.day,
     timeOfDay.hour,
     timeOfDay.minute,
   );
-  String formattedTime =
-      DateFormat.jm().format(parsedTime); // Format to include AM or PM
+  final formattedTime = DateFormat.jm().format(parsedTime).toLowerCase();
   return formattedTime;
 }
 
 class AppState extends ChangeNotifier {
   List<Task> tasks = [
-    Task('Task 1', '12:00 AM'),
-    Task('Task 2', '1:00 PM'),
-    Task('Task 3', '2:00 PM'),
+    Task('Task 1', '12:00 am'),
+    Task('Task 2', '1:00 pm'),
+    Task('Task 3', '2:00 pm'),
   ];
 
   final taskNameController = TextEditingController();
@@ -69,10 +70,15 @@ class AppState extends ChangeNotifier {
     tasks.remove(task);
     notifyListeners();
   }
+
+  void deleteAllTasks() {
+    tasks.clear();
+    notifyListeners();
+  }
 }
 
 class TrackaMain extends StatelessWidget {
-  const TrackaMain({super.key});
+  const TrackaMain({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -87,17 +93,31 @@ class TrackaMain extends StatelessWidget {
 }
 
 class TrackaMainPage extends StatelessWidget {
-  const TrackaMainPage({super.key});
+  const TrackaMainPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.black, size: 30),
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('tracka',
-            style: TextStyle(color: Colors.black, fontSize: 27)),
+            style: TextStyle(color: Colors.red, fontSize: 25)),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              // icon: Icon(Icons.menu, color: Colors.black, size: 30),
+              icon: Image.asset('assets/drawerIcon.png',
+                  color: Color.fromARGB(255, 84, 157, 211),
+                  width: 25,
+                  height: 25),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            ),
+          ),
+        ],
       ),
       endDrawer: appBarEndDrawer(context),
       body: CardList(),
@@ -105,8 +125,66 @@ class TrackaMainPage extends StatelessWidget {
   }
 }
 
+class TaskOverView extends StatelessWidget {
+  final List<Task> tasks;
+  final int completedTasksCount;
+
+  const TaskOverView({
+    Key? key,
+    required this.tasks,
+    required this.completedTasksCount,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 37),
+      child: ValueListenableBuilder<int>(
+        valueListenable: ValueNotifier(completedTasksCount),
+        builder: (context, value, child) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+              RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                    text: '${tasks.length}',
+                    style: TextStyle(
+                        fontSize: 100,
+                        color: Color.fromARGB(255, 233, 90, 90))),
+                TextSpan(
+                    text: '\ntasks for\ntoday',
+                    style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 7, 36, 114)))
+              ])),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              Row(
+                children: [
+                  Icon(Icons.check, color: Color.fromARGB(255, 54, 192, 135)),
+                  SizedBox(width: 10),
+                  Text(
+                    '$completedTasksCount task(s) done',
+                    style: TextStyle(
+                        color: Color.fromARGB(255, 164, 164, 165),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
 class CardList extends StatelessWidget {
-  const CardList({super.key});
+  const CardList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -118,24 +196,30 @@ class CardList extends StatelessWidget {
 
         void deleteTask(BuildContext context, Task task) {
           showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Delete Task'),
-                content: Text('Are you sure you want to delete this task?'),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                title: Center(
+                    child: Text('Task Deleted!',
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold))),
+                content: Text('${task.title} has been deleted.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 17)),
                 actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Cancel'),
-                  ),
                   TextButton(
                     onPressed: () {
                       appState.deleteTask(task);
                       Navigator.of(context).pop();
                     },
-                    child: Text('Delete'),
+                    child: Center(
+                        child: Text('OK', style: TextStyle(fontSize: 17))),
                   ),
                 ],
               );
@@ -144,36 +228,31 @@ class CardList extends StatelessWidget {
         }
 
         return ListView.builder(
-          itemCount: tasks.length + 1, // +1 for TaskOverView
+          itemCount: tasks.length + 1,
           itemBuilder: (context, index) {
             if (index == 0) {
               return TaskOverView(
-                  tasks: tasks, completedTasksCount: completedTasksCount);
+                key: ValueKey('TaskOverView'),
+                tasks: tasks,
+                completedTasksCount: completedTasksCount,
+              );
             } else {
               final task = tasks[index - 1];
-              return Column(
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.017),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 13, right: 13),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.133,
-                          child: CustomCard(
-                            task: task,
-                            toggleCheckbox: () {
-                              appState.toggleCardState(task);
-                            },
-                            deleteTask: (context) {
-                              deleteTask(context, task);
-                            },
-                          ),
-                        ),
-                      ],
+              return Padding(
+                key: ValueKey(task.title),
+                padding: const EdgeInsets.only(left: 13, right: 13, bottom: 5),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.13,
+                      child: CustomCard(
+                        key: ValueKey(task.title),
+                        task: task,
+                        deleteTask: (context) => deleteTask(context, task),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             }
           },
@@ -183,124 +262,124 @@ class CardList extends StatelessWidget {
   }
 }
 
-class TaskOverView extends StatelessWidget {
-  final List<Task> tasks;
-  final int completedTasksCount;
-
-  const TaskOverView(
-      {super.key, required this.tasks, required this.completedTasksCount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 37),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: '${tasks.length}',
-                  style: TextStyle(
-                      fontSize: 100, color: Color.fromARGB(255, 233, 90, 90)),
-                ),
-                TextSpan(
-                  text: '\ntasks for\ntoday',
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 7, 36, 114)),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          Row(
-            children: [
-              Icon(Icons.check, color: Color.fromARGB(255, 54, 192, 135)),
-              SizedBox(width: 10),
-              Text(
-                '$completedTasksCount task(s) done',
-                style: TextStyle(
-                    color: Color.fromARGB(255, 164, 164, 165),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-        ],
-      ),
-    );
-  }
-}
-
 class CustomCard extends StatelessWidget {
   final Task task;
-  final Function() toggleCheckbox;
   final Function(BuildContext) deleteTask;
 
   const CustomCard({
     required this.task,
-    required this.toggleCheckbox,
     required this.deleteTask,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 7,
-      // get the color of the card based on the task's isChecked state
-      color: task.isChecked ? Colors.green : Colors.red,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.title,
+    return GestureDetector(
+      onTap: () {
+        updateTask(context, task);
+      },
+      child: Dismissible(
+        key: ValueKey(task.title),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (DismissDirection direction) async {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                title: Center(
+                    child: Text('Delete Task?',
                         style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 25, fontWeight: FontWeight.bold))),
+                content: Text('Deletion process cannot be undone.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 17)),
+                actions: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text('Cancel', style: TextStyle(fontSize: 17)),
                       ),
-                      Text(task.time),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text('Delete', style: TextStyle(fontSize: 17)),
+                      ),
                     ],
                   ),
-                ),
-                IconButton(
-                    onPressed: () {
-                      updateTask(context, task);
-                    },
-                    icon: Icon(Icons.edit)),
-                IconButton(
-                    onPressed: () {
-                      deleteTask(context);
-                    },
-                    icon: Icon(Icons.delete)),
-                IconButton(
-                  icon: task.isChecked
-                      ? Icon(Icons.check_box_outlined)
-                      : Icon(Icons.check_box_outline_blank),
-                  onPressed: toggleCheckbox,
+                ],
+              );
+            },
+          );
+        },
+        onDismissed: (direction) {
+          bool shouldDelete = direction == DismissDirection.endToStart;
+          if (shouldDelete) {
+            deleteTask(context);
+          }
+        },
+        background: Container(
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 20),
+          ),
+        ),
+        child: Card(
+          elevation: 7,
+          color: Color.fromARGB(255, 54, 192, 135),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          task.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Text(task.time, style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: task.isChecked
+                              ? Icon(Icons.check_box,
+                                  color: Colors.white, size: 30)
+                              : Icon(Icons.check_box_outline_blank,
+                                  color: Colors.white, size: 30),
+                          onPressed: () {
+                            Provider.of<AppState>(context, listen: false)
+                                .toggleCardState(task);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -309,16 +388,23 @@ class CustomCard extends StatelessWidget {
 
 Drawer appBarEndDrawer(BuildContext context) {
   return Drawer(
-    child: ListView(
+    child: Column(
       children: [
-        DrawerHeader(
+        SizedBox(
+          width: double.infinity,
+          child: DrawerHeader(
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.1),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 ProfilePicture(
-                    name: 'John Doe', radius: 35, fontsize: 35, random: true),
+                  name: 'John Doe',
+                  radius: 37,
+                  fontsize: 31,
+                  random: true,
+                ),
                 SizedBox(height: 20),
                 Text(
                   'John Doe',
@@ -328,22 +414,81 @@ Drawer appBarEndDrawer(BuildContext context) {
                   ),
                 ),
               ],
-            )),
-        ListTile(
-          leading: Icon(Icons.add, size: 30),
-          title: Text('Create task', style: TextStyle(fontSize: 19)),
-          onTap: () {
-            createTask(context);
-          },
+            ),
+          ),
         ),
-        ListTile(
-          leading: Icon(Icons.delete, size: 30),
-          title: Text('Delete all tasks', style: TextStyle(fontSize: 19)),
-          onTap: () {},
+        Expanded(
+          child: Column(
+            children: [
+              ListTileTheme(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                child: ListTile(
+                  leading: Icon(Icons.add, size: 30, color: Colors.green),
+                  title: Text('Create task', style: TextStyle(fontSize: 19)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    createTask(context);
+                  },
+                ),
+              ),
+              Divider(
+                color: Colors.black,
+              ),
+              ListTileTheme(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                child: ListTile(
+                  leading: Icon(Icons.delete, size: 30, color: Colors.red),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Delete all tasks', style: TextStyle(fontSize: 19)),
+                      SizedBox(height: 5),
+                      Text('Please click wisely,\nThis action cannot be undone',
+                          style: TextStyle(fontSize: 12, color: Colors.red)),
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Provider.of<AppState>(context, listen: false)
+                        .deleteAllTasks();
+                  },
+                ),
+              ),
+              Divider(
+                color: Colors.black,
+              ),
+              Spacer(),
+              Divider(color: Colors.black.withOpacity(0.3)),
+              ListTileTheme(
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                child: ListTile(
+                  leading: Icon(Icons.logout, size: 30, color: Colors.blue),
+                  title: Text('Logout', style: TextStyle(fontSize: 19)),
+                  onTap: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        'login', (Route<dynamic> route) => false);
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     ),
   );
+}
+
+void onTapTime(BuildContext context) async {
+  TimeOfDay? pickedTime = await showTimePicker(
+    initialTime: TimeOfDay.now(),
+    context: context,
+  );
+
+  if (pickedTime != null) {
+    String formattedTime = formatTime(pickedTime);
+    Provider.of<AppState>(context, listen: false).taskTimeController.text =
+        formattedTime;
+  }
 }
 
 Future<dynamic> createTask(BuildContext context) {
@@ -365,17 +510,17 @@ Future<dynamic> createTask(BuildContext context) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Add Task',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                Center(
+                  child: Text(
+                    'Add Task',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  // clear the text when the textfield is submitted
                   onFieldSubmitted: (value) {
                     Provider.of<AppState>(context, listen: false)
-                        .taskNameController
-                        .clear();
+                        .taskNameController;
                   },
                   controller: Provider.of<AppState>(context).taskNameController,
                   decoration: InputDecoration(
@@ -388,22 +533,10 @@ Future<dynamic> createTask(BuildContext context) {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  readOnly:
-                      true, // Set this to true to prevent the keyboard from popping up
+                  readOnly: true,
                   controller: Provider.of<AppState>(context).taskTimeController,
                   onTap: () async {
-                    // Show the time picker when the TextFormField is clicked
-                    TimeOfDay? pickedTime = await showTimePicker(
-                      initialTime: TimeOfDay.now(),
-                      context: context,
-                    );
-
-                    if (pickedTime != null) {
-                      String formattedTime = formatTime(pickedTime);
-                      Provider.of<AppState>(context, listen: false)
-                          .taskTimeController
-                          .text = formattedTime;
-                    }
+                    onTapTime(context);
                   },
                   decoration: InputDecoration(
                     hintText: 'Time',
@@ -414,20 +547,20 @@ Future<dynamic> createTask(BuildContext context) {
                   ),
                 ),
                 SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
+                Center(
                   child: ElevatedButton(
                     onPressed: () {
                       Provider.of<AppState>(context, listen: false).addTask();
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 79, 155, 210),
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(20),
                       ),
+                      minimumSize: Size(150, 50),
                     ),
-                    child: Text('Add Task'),
+                    child: Text('Add Task', style: TextStyle(fontSize: 20)),
                   ),
                 ),
               ],
@@ -468,9 +601,11 @@ Future<void> updateTask(BuildContext context, Task task) async {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Edit Task',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                Center(
+                  child: Text(
+                    'Edit Task',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(height: 20),
                 TextFormField(
@@ -488,7 +623,6 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   readOnly: true,
                   controller: taskTimeController,
                   onTap: () async {
-                    // Show the time picker when the TextFormField is clicked
                     pickedTime = await showTimePicker(
                       initialTime: TimeOfDay.now(),
                       context: context,
@@ -508,11 +642,9 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   ),
                 ),
                 SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
+                Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Perform the update when the "Edit Task" button is pressed
                       String updatedTitle = taskNameController.text;
                       String updatedTime = taskTimeController.text;
 
@@ -530,12 +662,15 @@ Future<void> updateTask(BuildContext context, Task task) async {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 79, 155, 210),
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
+                      minimumSize: Size(180, 50),
                     ),
-                    child: Text('Edit Task'),
+                    child: Text('Edit Task',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
