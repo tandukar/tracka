@@ -3,20 +3,14 @@ import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '/Provider/provider.dart';
+import 'auth/login.dart';
+import 'createTask/createTask.dart';
+import 'deleteTask/deleteTask.dart';
+import 'shared_preferences_util.dart';
+import 'updateTask/updateTask.dart';
+
 void main() => runApp(TrackaMain());
-
-class Task {
-  final String title;
-  final String time;
-  bool isChecked;
-
-  Task(this.title, this.time, {this.isChecked = false});
-
-  @override
-  String toString() {
-    return 'Task{title: $title, time: $time, isChecked: $isChecked}';
-  }
-}
 
 String formatTime(TimeOfDay timeOfDay) {
   final now = DateTime.now();
@@ -29,52 +23,6 @@ String formatTime(TimeOfDay timeOfDay) {
   );
   final formattedTime = DateFormat.jm().format(parsedTime).toLowerCase();
   return formattedTime;
-}
-
-class AppState extends ChangeNotifier {
-  List<Task> tasks = [
-    Task('Task 1', '12:00 am'),
-    Task('Task 2', '1:00 pm'),
-    Task('Task 3', '2:00 pm'),
-  ];
-
-  final taskNameController = TextEditingController();
-  final taskTimeController = TextEditingController();
-
-  @override
-  void dispose() {
-    taskNameController.dispose();
-    taskTimeController.dispose();
-    super.dispose();
-  }
-
-  void toggleCardState(Task task) {
-    task.isChecked = !task.isChecked;
-    notifyListeners();
-  }
-
-  void addTask() {
-    tasks.add(Task(taskNameController.text, taskTimeController.text));
-    notifyListeners();
-  }
-
-  void editTask(Task oldTask, Task newTask) {
-    int index = tasks.indexOf(oldTask);
-    if (index != -1) {
-      tasks[index] = newTask;
-      notifyListeners();
-    }
-  }
-
-  void deleteTask(Task task) {
-    tasks.remove(task);
-    notifyListeners();
-  }
-
-  void deleteAllTasks() {
-    tasks.clear();
-    notifyListeners();
-  }
 }
 
 class TrackaMain extends StatelessWidget {
@@ -92,35 +40,57 @@ class TrackaMain extends StatelessWidget {
   }
 }
 
-class TrackaMainPage extends StatelessWidget {
+class TrackaMainPage extends StatefulWidget {
   const TrackaMainPage({Key? key}) : super(key: key);
 
   @override
+  State<TrackaMainPage> createState() => _TrackaMainPageState();
+}
+
+class _TrackaMainPageState extends State<TrackaMainPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load tasks from Shared Preferences
+    Provider.of<AppState>(context, listen: false)
+        .loadTasksFromSharedPreferences();
+    sharedPreferencesUtil();
+    print('This is from mainPage initState: _$userIdKey');
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.black, size: 30),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('tracka',
-            style: TextStyle(color: Colors.red, fontSize: 25)),
-        actions: [
-          Builder(
-            builder: (context) => IconButton(
-              // icon: Icon(Icons.menu, color: Colors.black, size: 30),
-              icon: Image.asset('assets/drawerIcon.png',
-                  color: Color.fromARGB(255, 84, 157, 211),
-                  width: 25,
-                  height: 25),
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
-              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+    return SafeArea(
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              iconTheme: IconThemeData(color: Colors.black, size: 30),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text('tracka',
+                  style: TextStyle(color: Colors.red, fontSize: 25)),
+              actions: [
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: Image.asset('assets/drawerIcon.png',
+                        color: Color.fromARGB(255, 84, 157, 211),
+                        width: 25,
+                        height: 25),
+                    onPressed: () => Scaffold.of(context).openEndDrawer(),
+                    tooltip:
+                        MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            endDrawer: appBarEndDrawer(context),
+            body: CardList(),
+          );
+        },
       ),
-      endDrawer: appBarEndDrawer(context),
-      body: CardList(),
     );
   }
 }
@@ -282,38 +252,7 @@ class CustomCard extends StatelessWidget {
         key: ValueKey(task.title),
         direction: DismissDirection.endToStart,
         confirmDismiss: (DismissDirection direction) async {
-          return await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                title: Center(
-                    child: Text('Delete Task?',
-                        style: TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold))),
-                content: Text('Deletion process cannot be undone.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 17)),
-                actions: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text('Cancel', style: TextStyle(fontSize: 17)),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text('Delete', style: TextStyle(fontSize: 17)),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
-          );
+          return await deleteATask(context);
         },
         onDismissed: (direction) {
           bool shouldDelete = direction == DismissDirection.endToStart;
@@ -424,7 +363,9 @@ Drawer appBarEndDrawer(BuildContext context) {
                 contentPadding: EdgeInsets.symmetric(horizontal: 16),
                 child: ListTile(
                   leading: Icon(Icons.add, size: 30, color: Colors.green),
-                  title: Text('Create task', style: TextStyle(fontSize: 19)),
+                  title: Text('Create task',
+                      style:
+                          TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
                   onTap: () {
                     Navigator.pop(context);
                     createTask(context);
@@ -441,10 +382,13 @@ Drawer appBarEndDrawer(BuildContext context) {
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Delete all tasks', style: TextStyle(fontSize: 19)),
+                      Text('Delete all tasks',
+                          style: TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.bold)),
                       SizedBox(height: 5),
-                      Text('Please click wisely,\nThis action cannot be undone',
-                          style: TextStyle(fontSize: 12, color: Colors.red)),
+                      Text(
+                          'Choose Wisely, Alert!!!\nThis operation cannot be UnDone',
+                          style: TextStyle(fontSize: 13, color: Colors.red)),
                     ],
                   ),
                   onTap: () {
@@ -463,10 +407,12 @@ Drawer appBarEndDrawer(BuildContext context) {
                 contentPadding: EdgeInsets.symmetric(horizontal: 16),
                 child: ListTile(
                   leading: Icon(Icons.logout, size: 30, color: Colors.blue),
-                  title: Text('Logout', style: TextStyle(fontSize: 19)),
+                  title: Text('Logout',
+                      style:
+                          TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
                   onTap: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        'login', (Route<dynamic> route) => false);
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) => Login()));
                   },
                 ),
               ),
@@ -489,195 +435,4 @@ void onTapTime(BuildContext context) async {
     Provider.of<AppState>(context, listen: false).taskTimeController.text =
         formattedTime;
   }
-}
-
-Future<dynamic> createTask(BuildContext context) {
-  return showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return Container(
-        color: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Text(
-                    'Add Task',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  onFieldSubmitted: (value) {
-                    Provider.of<AppState>(context, listen: false)
-                        .taskNameController;
-                  },
-                  controller: Provider.of<AppState>(context).taskNameController,
-                  decoration: InputDecoration(
-                    hintText: 'Task Name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    prefixIcon: Icon(Icons.task),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  readOnly: true,
-                  controller: Provider.of<AppState>(context).taskTimeController,
-                  onTap: () async {
-                    onTapTime(context);
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Time',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    prefixIcon: Icon(Icons.timer),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Provider.of<AppState>(context, listen: false).addTask();
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      minimumSize: Size(150, 50),
-                    ),
-                    child: Text('Add Task', style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
-
-Future<void> updateTask(BuildContext context, Task task) async {
-  String initialTitle = task.title;
-  String initialTime = task.time;
-
-  TextEditingController taskNameController =
-      TextEditingController(text: initialTitle);
-  TextEditingController taskTimeController =
-      TextEditingController(text: initialTime);
-
-  TimeOfDay? pickedTime;
-
-  await showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return Container(
-        color: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Text(
-                    'Edit Task',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  controller: taskNameController,
-                  decoration: InputDecoration(
-                    hintText: 'Task Name',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    prefixIcon: Icon(Icons.task),
-                  ),
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  readOnly: true,
-                  controller: taskTimeController,
-                  onTap: () async {
-                    pickedTime = await showTimePicker(
-                      initialTime: TimeOfDay.now(),
-                      context: context,
-                    );
-
-                    if (pickedTime != null) {
-                      String formattedTime = formatTime(pickedTime!);
-                      taskTimeController.text = formattedTime;
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Time',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    prefixIcon: Icon(Icons.timer),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      String updatedTitle = taskNameController.text;
-                      String updatedTime = taskTimeController.text;
-
-                      if (updatedTitle.isNotEmpty && updatedTime.isNotEmpty) {
-                        Task updatedTask = Task(
-                          updatedTitle,
-                          updatedTime,
-                          isChecked: task.isChecked,
-                        );
-
-                        Provider.of<AppState>(context, listen: false)
-                            .editTask(task, updatedTask);
-                      }
-
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      minimumSize: Size(180, 50),
-                    ),
-                    child: Text('Edit Task',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
 }

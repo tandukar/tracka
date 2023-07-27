@@ -4,8 +4,18 @@ import 'package:provider/provider.dart';
 import '/Provider/provider.dart';
 import '../TrackaMainPage.dart';
 
-Future<dynamic> createTask(BuildContext context) {
-  return showModalBottomSheet(
+Future<void> updateTask(BuildContext context, Task task) async {
+  String initialTitle = task.title;
+  String initialTime = task.time;
+
+  TextEditingController taskNameController =
+      TextEditingController(text: initialTitle);
+  TextEditingController taskTimeController =
+      TextEditingController(text: initialTime);
+
+  TimeOfDay? pickedTime;
+
+  await showModalBottomSheet(
     context: context,
     builder: (context) {
       return Container(
@@ -25,17 +35,13 @@ Future<dynamic> createTask(BuildContext context) {
               children: [
                 Center(
                   child: Text(
-                    'Add Task',
+                    'Edit Task',
                     style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  onFieldSubmitted: (value) {
-                    Provider.of<AppState>(context, listen: false)
-                        .taskNameController;
-                  },
-                  controller: Provider.of<AppState>(context).taskNameController,
+                  controller: taskNameController,
                   decoration: InputDecoration(
                     hintText: 'Task Name',
                     border: OutlineInputBorder(
@@ -47,9 +53,17 @@ Future<dynamic> createTask(BuildContext context) {
                 SizedBox(height: 20),
                 TextFormField(
                   readOnly: true,
-                  controller: Provider.of<AppState>(context).taskTimeController,
+                  controller: taskTimeController,
                   onTap: () async {
-                    onTapTime(context);
+                    pickedTime = await showTimePicker(
+                      initialTime: TimeOfDay.now(),
+                      context: context,
+                    );
+
+                    if (pickedTime != null) {
+                      String formattedTime = formatTime(pickedTime!);
+                      taskTimeController.text = formattedTime;
+                    }
                   },
                   decoration: InputDecoration(
                     hintText: 'Time',
@@ -63,17 +77,32 @@ Future<dynamic> createTask(BuildContext context) {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Provider.of<AppState>(context, listen: false).addTask();
+                      String updatedTitle = taskNameController.text;
+                      String updatedTime = taskTimeController.text;
+
+                      if (updatedTitle.isNotEmpty && updatedTime.isNotEmpty) {
+                        Task updatedTask = Task(
+                          updatedTitle,
+                          updatedTime,
+                          isChecked: task.isChecked,
+                        );
+
+                        Provider.of<AppState>(context, listen: false)
+                            .editTask(task, updatedTask);
+                      }
+
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      minimumSize: Size(150, 50),
+                      minimumSize: Size(180, 50),
                     ),
-                    child: Text('Add Task', style: TextStyle(fontSize: 20)),
+                    child: Text('Edit Task',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

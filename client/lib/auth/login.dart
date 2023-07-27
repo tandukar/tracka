@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:client/shared_preferences_util.dart';
 import 'package:flutter/material.dart';
 
 import '../trackaMainPage.dart';
@@ -25,6 +26,7 @@ bool passText = true;
 //
 final email = emailController.text;
 final password = passwordController.text;
+//
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,59 +44,63 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
+  void initState() {
+    print('This is from login initState: _$userIdKey');
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
           image: AssetImage("assets/loginBg.png"),
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
         ),
       ),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
-        body: Stack(children: [
-          SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                  SizedBox(
-                    child: Card(
-                      elevation: 0,
-                      color: Colors.transparent,
-                      child: Padding(
-                        padding: const EdgeInsets.all(13),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            SizedBox(height: 120),
-                            Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 33,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.teal[500],
-                              ),
+        body: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
+                SizedBox(
+                  child: Card(
+                    elevation: 0,
+                    color: Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(13),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 120),
+                          Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 33,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.teal[500],
                             ),
-                            SizedBox(height: 30),
-                            EmailFieldWidget(controller: emailController),
-                            SizedBox(height: 20),
-                            PasswordFieldWidget(controller: passwordController),
-                            SizedBox(height: 50),
-                            buildButton(),
-                            SizedBox(height: 30),
-                            buildNoAccount(),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: 30),
+                          EmailFieldWidget(controller: emailController),
+                          SizedBox(height: 20),
+                          PasswordFieldWidget(controller: passwordController),
+                          SizedBox(height: 50),
+                          buildButton(),
+                          SizedBox(height: 30),
+                          buildNoAccount(),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ]),
+        ),
       ),
     );
   }
@@ -105,11 +111,6 @@ class _LoginPageState extends State<LoginPage> {
           final form = formKey.currentState!;
 
           if (form.validate()) {
-            // ScaffoldMessenger.of(context)
-            //   ..removeCurrentSnackBar()
-            //   ..showSnackBar(SnackBar(
-            //     content: Text('Your email is $email'),
-            //   ));
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => TrackaMain()));
           }

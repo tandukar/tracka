@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-//
 import 'TrackaMainPage.dart';
 import 'auth/login.dart';
 import 'auth/register.dart';
-import 'createTask/createTask.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +27,6 @@ class Tracka extends StatelessWidget {
         'login': (context) => Login(),
         'register': (context) => Register(),
         'trackaMainPage': (context) => TrackaMain(),
-        //
-        'createTask': (context) => CreateTask(),
       },
     );
   }
