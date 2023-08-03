@@ -45,65 +45,57 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-          image: AssetImage("assets/registerBg.png"),
-          fit: BoxFit.cover,
-        )),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.3),
-                      SizedBox(
-                        child: Card(
-                          elevation: 0,
-                          color: Colors.transparent,
-                          child: Padding(
-                            padding: const EdgeInsets.all(13),
-                            child: Column(
-                              // mainAxisSize: MainAxisSize.max,
-                              children: [
-                                SizedBox(height: 10),
-                                Text(
-                                  'Register',
-                                  style: TextStyle(
-                                    fontSize: 33,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                SizedBox(height: 30),
-                                usernameFieldWidget(),
-                                SizedBox(height: 20),
-                                EmailFieldWidget(controller: emailController),
-                                SizedBox(height: 20),
-                                PasswordFieldWidget(
-                                    controller: passwordController),
-                                SizedBox(height: 20),
-                                confirmPasswordFieldWidget(context),
-                                SizedBox(height: 30),
-                                buildButton(),
-                                SizedBox(height: 15),
-                                buildNoAccount(),
-                              ],
+    return Container(
+      decoration: BoxDecoration(
+          image: DecorationImage(
+        image: AssetImage("assets/registerBg.png"),
+        fit: BoxFit.fill,
+      )),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.23),
+                SizedBox(
+                  child: Card(
+                    elevation: 0,
+                    color: Colors.transparent,
+                    child: Padding(
+                      padding: const EdgeInsets.all(13),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 10),
+                          Text(
+                            'Register',
+                            style: TextStyle(
+                              fontSize: 33,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ),
+                          SizedBox(height: 30),
+                          usernameFieldWidget(),
+                          SizedBox(height: 20),
+                          EmailFieldWidget(controller: emailController),
+                          SizedBox(height: 20),
+                          PasswordFieldWidget(controller: passwordController),
+                          SizedBox(height: 20),
+                          confirmPasswordFieldWidget(context),
+                          SizedBox(height: 30),
+                          buildButton(),
+                          SizedBox(height: 15),
+                          buildNoAccount(),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ]),
+          ),
         ),
       ),
     );
