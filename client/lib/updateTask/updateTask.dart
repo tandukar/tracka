@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '/Provider/provider.dart';
-import '../TrackaMainPage.dart';
+import '../trackaMainPage.dart';
 
 Future<void> updateTask(BuildContext context, Task task) async {
-  String initialTitle = task.title;
+  String initialTitle = task.taskName;
   String initialTime = task.time;
+  // String initialDescription = task.description;
 
   TextEditingController taskNameController =
       TextEditingController(text: initialTitle);
   TextEditingController taskTimeController =
       TextEditingController(text: initialTime);
+  // TextEditingController taskDescriptionController =
+  //     TextEditingController(text: initialDescription);
 
   TimeOfDay? pickedTime;
 
@@ -74,16 +77,32 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   ),
                 ),
                 SizedBox(height: 20),
+                PriorityDropdown(),
+                SizedBox(height: 20),
+                TextFormField(
+                  // controller: taskDescriptionController,
+                  decoration: InputDecoration(
+                    hintText: 'Description',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    prefixIcon: Icon(Icons.description),
+                  ),
+                ),
+                SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
                       String updatedTitle = taskNameController.text;
                       String updatedTime = taskTimeController.text;
+                      // String updatedDescription =
+                      //     taskDescriptionController.text;
 
                       if (updatedTitle.isNotEmpty && updatedTime.isNotEmpty) {
                         Task updatedTask = Task(
                           updatedTitle,
                           updatedTime,
+                          // updatedDescription,
                           isChecked: task.isChecked,
                         );
 

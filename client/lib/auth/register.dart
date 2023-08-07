@@ -1,65 +1,79 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
 import 'dart:core';
 
+import 'package:client/baseApi.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/button_widget.dart';
-// import '../widgets/confirm_password_field_widget.dart';
 import '../widgets/email_field_widget.dart';
 import '../widgets/password_field_widget.dart';
 import 'login.dart';
 
+final Dio _dio = Dio();
+
 class Register extends StatelessWidget {
-  const Register({super.key});
+  const Register({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return RegisterPage();
+    return RegisterPage(
+      formKey: GlobalKey<FormState>(),
+    );
   }
 }
 
-final formKey = GlobalKey<FormState>();
-final emailController = TextEditingController();
-//
-final passwordController = TextEditingController();
-final confirmPasswordController = TextEditingController();
-bool passText = true;
-bool confirmPassText = true;
-//
-final email = emailController.text;
-final password = passwordController.text;
-
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final GlobalKey<FormState> formKey;
+
+  const RegisterPage({Key? key, required this.formKey}) : super(key: key);
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  bool confirmPassText = true;
+
   @override
   void dispose() {
+    usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    print('Register InitState');
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          image: DecorationImage(
-        image: AssetImage("assets/registerBg.png"),
-        fit: BoxFit.fill,
-      )),
+        image: DecorationImage(
+          image: AssetImage("assets/registerBg.png"),
+          fit: BoxFit.fill,
+        ),
+      ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
           child: Form(
-            key: formKey,
+            key: widget.formKey,
             child: Column(
               children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.23),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
                 SizedBox(
                   child: Card(
                     elevation: 0,
@@ -103,6 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   TextFormField usernameFieldWidget() {
     return TextFormField(
+      controller: usernameController,
       decoration: InputDecoration(
         hintText: 'Username',
         border: OutlineInputBorder(
@@ -145,30 +160,103 @@ class _RegisterPageState extends State<RegisterPage> {
           icon: Icon(confirmPassText ? Icons.visibility : Icons.visibility_off),
         ),
       ),
-      validator: (value) {
-        if (value != null && value != passwordController.text) {
-          return 'Passwords do not match';
-        }
-        return null;
-      },
+      validator: (pass) => pass != null && pass != passwordController.text
+          ? 'Passwords do not match'
+          : null,
     );
   }
 
   Widget buildButton() => ButtonWidget(
         text: 'Register',
         onClicked: () {
-          final form = formKey.currentState!;
+          final form = widget.formKey.currentState!;
 
           if (form.validate()) {
-            // ScaffoldMessenger.of(context)
-            //   ..removeCurrentSnackBar()
-            //   ..showSnackBar(SnackBar(
-            //     content: Text('Your email is $email'),
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Login()));
+            final username = usernameController.text;
+            final email = emailController.text;
+            final password = passwordController.text;
+            final confirmPassword = confirmPasswordController.text;
+
+            print('Username: $username');
+            print('Email: $email');
+            print('Password: $password');
+            print('Confirm Password: $confirmPassword');
+
+            register();
           }
         },
       );
+
+  void register() async {
+    var regBody = {
+      'username': usernameController.text,
+      'email': emailController.text,
+      'password': passwordController.text,
+    };
+    print(regBody);
+
+    try {
+      final response = await _dio.post(
+        '$baseApi/auth/register',
+        options: Options(headers: {"Content-Type": "application/json"}),
+        data: jsonEncode(regBody),
+      );
+      print(response.data);
+      // if 200 status
+      if (response.statusCode == 200) {
+        print('Registered successfully');
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Login()));
+      }
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+      // if 400 status
+      // if (response.statusCode == 400) {
+      //   print('Bad request');
+      //   showDialog(
+      //     context: context,
+      //     builder: (BuildContext context) {
+      //       return AlertDialog(
+      //         title: Text('Error'),
+      //         content: Text('Email already exists, try logging in'),
+      //         actions: [
+      //           TextButton(
+      //             onPressed: () {
+      //               Navigator.of(context).pop();
+      //             },
+      //             child: Text('OK'),
+      //           ),
+      //         ],
+      //       );
+      //     },
+      //   );
+      // }
+    } on DioException catch (e) {
+      print(e);
+      // if (e.response!.statusCode == 400) {
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (context) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                title: Text('Email already exists',
+                    style: TextStyle(fontSize: 20, color: Colors.red),
+                    textAlign: TextAlign.center),
+                content: Text('Try logging in instead',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center),
+                actions: [
+                  TextButton(
+                    child: Center(child: Text('OK')),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ));
+      // }
+    }
+  }
 
   Widget buildNoAccount() => Row(
         mainAxisAlignment: MainAxisAlignment.center,
