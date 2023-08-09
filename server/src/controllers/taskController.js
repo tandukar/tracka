@@ -16,6 +16,21 @@ exports.getTasks = async(req, res) => {
 
 }
 
+
+exports.getTasksById = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const userTasks = await Task.find({ taskOwnerId: id });
+        console.log(userTasks)
+        if (!userTasks) return res.status(400).json({ message: "User not found!" })
+        return res.status(200).json(userTasks);
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 exports.createTask = async(req, res) => {
     try {
         const {
