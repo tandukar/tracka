@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:client/shared_preferences_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +11,6 @@ import '/Provider/provider.dart';
 import 'auth/login.dart';
 import 'createTask/createTask.dart';
 import 'deleteTask/deleteTask.dart';
-import 'shared_preferences_util.dart';
 import 'updateTask/updateTask.dart';
 
 void main() => runApp(TrackaMain());
@@ -21,12 +24,33 @@ String formatTime(TimeOfDay timeOfDay) {
     timeOfDay.hour,
     timeOfDay.minute,
   );
-  final formattedTime = DateFormat.jm().format(parsedTime).toLowerCase();
+  final formattedTime = parsedTime.toIso8601String();
   return formattedTime;
 }
 
-class TrackaMain extends StatelessWidget {
+String displayTime(taskTime) {
+  DateTime dateTime = DateTime.parse(taskTime);
+  String formattedTime = DateFormat('yyyy-MM-dd, hh:mm a').format(dateTime);
+  return formattedTime;
+}
+
+class TrackaMain extends StatefulWidget {
   const TrackaMain({Key? key}) : super(key: key);
+
+  @override
+  State<TrackaMain> createState() => _TrackaMainState();
+}
+
+class _TrackaMainState extends State<TrackaMain> {
+  @override
+  void initState() {
+    sharedPreferencesUtil();
+    print('TrackaMainPage: $userIdKey');
+    super.initState();
+    // Load tasks from Shared Preferences
+    Provider.of<AppState>(context, listen: false)
+        .loadTasksFromSharedPreferences();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,16 +73,6 @@ class TrackaMainPage extends StatefulWidget {
 
 class _TrackaMainPageState extends State<TrackaMainPage> {
   @override
-  void initState() {
-    super.initState();
-    // Load tasks from Shared Preferences
-    Provider.of<AppState>(context, listen: false)
-        .loadTasksFromSharedPreferences();
-    sharedPreferencesUtil();
-    print('This is from mainPage initState: _$userIdKey');
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Builder(
@@ -76,7 +90,7 @@ class _TrackaMainPageState extends State<TrackaMainPage> {
                 Builder(
                   builder: (context) => IconButton(
                     icon: Image.asset('assets/drawerIcon.png',
-                        color: Color.fromARGB(255, 84, 157, 211),
+                        color: Color.fromARGB(255, 7, 36, 114),
                         width: 25,
                         height: 25),
                     onPressed: () => Scaffold.of(context).openEndDrawer(),
@@ -125,10 +139,18 @@ class TaskOverView extends StatelessWidget {
                         color: Color.fromARGB(255, 233, 90, 90))),
                 TextSpan(
                     text: '\ntasks for\ntoday',
-                    style: TextStyle(
+                    style: GoogleFonts.basic(
+                      textStyle: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 7, 36, 114)))
+                        color: Color.fromARGB(255, 7, 36, 114),
+                      ),
+                    )
+                    // style: TextStyle(
+                    //     fontSize: 30,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: Color.fromARGB(255, 7, 36, 114)),
+                    )
               ])),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02),
               Row(
@@ -165,36 +187,7 @@ class CardList extends StatelessWidget {
             tasks.where((task) => task.isChecked).length;
 
         void deleteTask(BuildContext context, Task task) {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                title: Center(
-                    child: Text('Task Deleted!',
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold))),
-                content: Text('${task.title} has been deleted.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 17)),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      appState.deleteTask(task);
-                      Navigator.of(context).pop();
-                    },
-                    child: Center(
-                        child: Text('OK', style: TextStyle(fontSize: 17))),
-                  ),
-                ],
-              );
-            },
-          );
+          showDialoggg(context, task, appState);
         }
 
         return ListView.builder(
@@ -209,14 +202,14 @@ class CardList extends StatelessWidget {
             } else {
               final task = tasks[index - 1];
               return Padding(
-                key: ValueKey(task.title),
+                key: ValueKey(task.taskName),
                 padding: const EdgeInsets.only(left: 13, right: 13, bottom: 5),
                 child: Column(
                   children: [
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.13,
                       child: CustomCard(
-                        key: ValueKey(task.title),
+                        key: ValueKey(task.taskName),
                         task: task,
                         deleteTask: (context) => deleteTask(context, task),
                       ),
@@ -226,6 +219,50 @@ class CardList extends StatelessWidget {
               );
             }
           },
+        );
+      },
+    );
+  }
+
+  Future<dynamic> showDialoggg(
+      BuildContext context, Task task, AppState appState) {
+    return showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          title: Center(
+              child: Text('Task Deleted!',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold))),
+          content: Text.rich(
+            TextSpan(
+              children: <TextSpan>[
+                TextSpan(
+                    text: '"${task.taskName}"',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    )),
+                TextSpan(text: ' deleted'),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20.0),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                appState.deleteTask(task);
+                Navigator.of(context).pop();
+              },
+              child: Center(child: Text('OK', style: TextStyle(fontSize: 17))),
+            ),
+          ],
         );
       },
     );
@@ -249,7 +286,7 @@ class CustomCard extends StatelessWidget {
         updateTask(context, task);
       },
       child: Dismissible(
-        key: ValueKey(task.title),
+        key: ValueKey(task.taskName),
         direction: DismissDirection.endToStart,
         confirmDismiss: (DismissDirection direction) async {
           return await deleteATask(context);
@@ -283,36 +320,39 @@ class CustomCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          task.title,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 21,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      flex: 6,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            task.taskName,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 21,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 5),
-                        Text(task.time, style: TextStyle(color: Colors.white)),
-                      ],
+                          SizedBox(height: 5),
+                          Text(displayTime(task.time),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 15)),
+                        ],
+                      ),
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: task.isChecked
-                              ? Icon(Icons.check_box,
-                                  color: Colors.white, size: 30)
-                              : Icon(Icons.check_box_outline_blank,
-                                  color: Colors.white, size: 30),
-                          onPressed: () {
-                            Provider.of<AppState>(context, listen: false)
-                                .toggleCardState(task);
-                          },
-                        ),
-                      ],
+                    Expanded(
+                      child: IconButton(
+                        icon: task.isChecked
+                            ? Icon(Icons.check_box,
+                                color: Colors.white, size: 30)
+                            : Icon(Icons.check_box_outline_blank,
+                                color: Colors.white, size: 30),
+                        onPressed: () {
+                          Provider.of<AppState>(context, listen: false)
+                              .toggleCardState(task);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -410,9 +450,12 @@ Drawer appBarEndDrawer(BuildContext context) {
                   title: Text('Logout',
                       style:
                           TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) => Login()));
+                    // SharedPreferences prefs =
+                    //     await SharedPreferences.getInstance();
+                    // prefs.remove('jwtToken');
                   },
                 ),
               ),
