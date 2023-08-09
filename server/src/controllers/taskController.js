@@ -4,6 +4,18 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/Users");
 const Task = require("../models/Tasks");
 
+
+exports.getTasks = async(req, res) => {
+    try {
+        const task = await Task.find();
+        return res.status(200).json(task);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+
+}
+
 exports.createTask = async(req, res) => {
     try {
         const {
