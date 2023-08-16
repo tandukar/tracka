@@ -125,19 +125,19 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         prefixIcon: Icon(Icons.person),
       ),
-      validator: (userName) {
-        if (userName != null && userName.isEmpty) {
-          return 'Please enter your username';
-        }
-        // Regular expression to check for at least two words separated by a space
-        RegExp regex = RegExp(r'^\w+\s+\w+.*$');
+      // validator: (userName) {
+      //   if (userName != null && userName.isEmpty) {
+      //     return 'Please enter your username';
+      //   }
+      //   // Regular expression to check for at least two words separated by a space
+      //   RegExp regex = RegExp(r'^\w+\s+\w+.*$');
 
-        if (!regex.hasMatch(userName!.trim())) {
-          return 'Username should contain at least two words';
-        }
+      //   if (!regex.hasMatch(userName!.trim())) {
+      //     return 'Username should contain at least two words';
+      //   }
 
-        return null;
-      },
+      //   return null;
+      // },
     );
   }
 

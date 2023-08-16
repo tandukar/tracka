@@ -2,8 +2,8 @@
 
 import 'dart:convert';
 
+import 'package:client/mainPage/trackaMainPage.dart';
 import 'package:client/shared_preferences_util.dart';
-import 'package:client/trackaMainPage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -157,7 +157,10 @@ class _LoginPageState extends State<LoginPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            strokeWidth: 5,
+            color: Colors.lightBlue,
+          ),
         );
       },
     );

@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/Provider/provider.dart';
-import '../trackaMainPage.dart';
+import '../provider/provider.dart';
+import '../taskClass.dart';
+import '../widgets/priorityDropdown.dart';
+import '../widgets/time.dart';
 
 Future<void> updateTask(BuildContext context, Task task) async {
   String initialTitle = task.taskName;
-  String initialTime = task.time;
-  // String initialDescription = task.description;
+  String initialTime = task.taskTime;
+
+  String initialDescription = task.taskDescription;
 
   TextEditingController taskNameController =
       TextEditingController(text: initialTitle);
   TextEditingController taskTimeController =
       TextEditingController(text: initialTime);
-  // TextEditingController taskDescriptionController =
-  //     TextEditingController(text: initialDescription);
+  TextEditingController taskDescriptionController =
+      TextEditingController(text: initialDescription);
 
   TimeOfDay? pickedTime;
 
@@ -95,14 +98,14 @@ Future<void> updateTask(BuildContext context, Task task) async {
                     onPressed: () {
                       String updatedTitle = taskNameController.text;
                       String updatedTime = taskTimeController.text;
-                      // String updatedDescription =
-                      //     taskDescriptionController.text;
+                      String updatedDescription =
+                          taskDescriptionController.text;
 
                       if (updatedTitle.isNotEmpty && updatedTime.isNotEmpty) {
                         Task updatedTask = Task(
                           updatedTitle,
                           updatedTime,
-                          // updatedDescription,
+                          updatedDescription,
                           isChecked: task.isChecked,
                         );
 

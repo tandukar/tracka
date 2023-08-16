@@ -8,8 +8,17 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/Provider/provider.dart';
-import '../trackaMainPage.dart';
+import '../provider/provider.dart';
+import '../widgets/priorityDropdown.dart';
+import '../widgets/taskStatusDropdown.dart';
+import '../widgets/time.dart';
+
+bool _isAnyFieldEmpty(BuildContext context) {
+  final state = Provider.of<AppState>(context, listen: false);
+  return state.taskNameController.text.isEmpty ||
+      state.taskTimeController.text.isEmpty ||
+      state.taskDescriptionController.text.isEmpty;
+}
 
 Future<dynamic> createTask(BuildContext context) {
   void addTask() async {
@@ -26,8 +35,6 @@ Future<dynamic> createTask(BuildContext context) {
       'taskTime':
           Provider.of<AppState>(context, listen: false).taskTimeController.text,
       'taskOwnerId': userIdKey,
-      // 'taskOwner': 'John Doe',
-      // 'taskCreatedDate': DateTime(2023, 8, 1),
     };
     print(regBody);
 
@@ -40,9 +47,10 @@ Future<dynamic> createTask(BuildContext context) {
       print(response.data);
 
       if (response.statusCode == 200) {
+        // Task is created from below line
         Provider.of<AppState>(context, listen: false).addTask();
         Navigator.of(context).pop();
-        //
+
         // clear the text field
         Provider.of<AppState>(context, listen: false)
             .taskNameController
@@ -55,9 +63,12 @@ Future<dynamic> createTask(BuildContext context) {
             .clear();
 
         print('Task created successfully');
+        // print(taskId);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Task created successfully')),
+          SnackBar(
+              duration: Duration(seconds: 3),
+              content: Text('Task created successfully')),
         );
       } else if (response.statusCode == 400) {
         print('Task creation failed');
@@ -93,7 +104,7 @@ Future<dynamic> createTask(BuildContext context) {
                     style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 TextFormField(
                   onFieldSubmitted: (value) {
                     Provider.of<AppState>(context, listen: false)
@@ -108,7 +119,7 @@ Future<dynamic> createTask(BuildContext context) {
                     prefixIcon: Icon(Icons.task),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 TextFormField(
                   readOnly: true,
                   controller: Provider.of<AppState>(context).taskTimeController,
@@ -123,9 +134,9 @@ Future<dynamic> createTask(BuildContext context) {
                     prefixIcon: Icon(Icons.timer),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 PriorityDropdown(),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 TextFormField(
                   onFieldSubmitted: (value) {
                     Provider.of<AppState>(context, listen: false)
@@ -141,14 +152,47 @@ Future<dynamic> createTask(BuildContext context) {
                     prefixIcon: Icon(Icons.task),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 TaskStatusDropdown(),
+                SizedBox(height: 15),
                 Expanded(
                   child: Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        print(selectedPriority);
-                        addTask();
+                        if (_isAnyFieldEmpty(context)) {
+                          showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                title: Center(
+                                    child: Text('Empty!!!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.bold))),
+                                content: Text('Please enter all the fields',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 17)),
+                                actions: [
+                                  Center(
+                                    child: TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      child: Text('OK',
+                                          style: TextStyle(fontSize: 17)),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          addTask();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -161,6 +205,7 @@ Future<dynamic> createTask(BuildContext context) {
                     ),
                   ),
                 ),
+                SizedBox(height: 15),
               ],
             ),
           ),

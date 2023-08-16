@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'Provider/provider.dart';
 import 'auth/login.dart';
 import 'auth/register.dart';
-import 'trackaMainPage.dart';
+import 'mainPage/trackaMainPage.dart';
+import 'provider/provider.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
