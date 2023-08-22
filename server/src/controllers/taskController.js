@@ -47,15 +47,20 @@ exports.getTasksById = async(req, res) => {
 exports.updateTask = async(req, res) => {
     try {
         const { id, taskId } = req.query;
+
         const { taskName, taskDescription, taskStatus, taskPriority, taskTime } =
         req.body;
 
         console.log(req.query);
+
         const user = await User.findById(id);
         if (!user) return res.status(400).json({ message: "User not found!" });
 
-        const task = await Task.findById(taskId);
-        if (!task) return res.status(400).json({ message: "Task not found!" });
+        const task = await Task.find({ taskOwnerId: id });
+        const taskIds = task.map(task => task._id.toString());
+        // console.log(taskIds)
+
+        if (!taskIds.includes(taskId)) return res.status(400).json({ message: "Task not found!" });
 
         const update = await Task.findByIdAndUpdate(req.query.taskId, {
             taskName,
