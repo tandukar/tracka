@@ -61,3 +61,23 @@ exports.loginUser = async(req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+exports.updateUser = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) return res.status(400).json({ message: "User not found!" });
+
+        const updateUser = await User.updateMany({ _id: id }, {
+            $set: {
+                username: req.body.username,
+                email: req.body.email,
+            },
+        });
+
+        res.send(updateUser);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
