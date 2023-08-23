@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 import 'auth/login.dart';
 import 'auth/register.dart';
 import 'mainPage/trackaMainPage.dart';
-import 'provider/provider.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,21 +20,14 @@ class Tracka extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<AppState>(create: (_) => AppState()),
-
-        // Add other providers if needed
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(body: Login()),
-        routes: {
-          'login': (context) => Login(),
-          'register': (context) => Register(),
-          'trackaMainPage': (context) => TrackaMain(),
-        },
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(body: Login()),
+      routes: {
+        'login': (context) => Login(),
+        'register': (context) => Register(),
+        'trackaMainPage': (context) => TrackaMain(),
+      },
     );
   }
 }

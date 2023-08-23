@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:client/mainPage/trackaMainPage.dart';
-import 'package:client/shared_preferences_util.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,62 +50,79 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     // print('Login InitState');
-    sharedPreferencesUtil();
+    // sharedPreferencesUtil();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/loginBg.png"),
-          fit: BoxFit.fill,
-        ),
-      ),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          child: Form(
-            key: widget.formKey,
-            child: Column(
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-                SizedBox(
-                  child: Card(
-                    elevation: 0,
-                    color: Colors.transparent,
-                    child: Padding(
-                      padding: const EdgeInsets.all(13),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 120),
-                          Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 33,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.teal[500],
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          EmailFieldWidget(controller: emailController),
-                          SizedBox(height: 20),
-                          PasswordFieldWidget(controller: passwordController),
-                          SizedBox(height: 50),
-                          buildButton(),
-                          SizedBox(height: 30),
-                          buildNoAccount(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+    return SafeArea(
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.blue.shade200, Colors.blue.shade500],
+              ),
             ),
           ),
-        ),
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/loginBg.png"),
+                fit: BoxFit.fill,
+              ),
+            ),
+            child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: Colors.transparent,
+              body: SingleChildScrollView(
+                child: Form(
+                  key: widget.formKey,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.2),
+                      SizedBox(
+                        child: Card(
+                          elevation: 0,
+                          color: Colors.transparent,
+                          child: Padding(
+                            padding: const EdgeInsets.all(13),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 120),
+                                Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 33,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                                EmailFieldWidget(controller: emailController),
+                                SizedBox(height: 20),
+                                PasswordFieldWidget(
+                                    controller: passwordController),
+                                SizedBox(height: 50),
+                                buildButton(),
+                                SizedBox(height: 30),
+                                buildNoAccount(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -180,6 +196,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pop(context); // Close the loading dialog.
 
       if (response.statusCode == 200) {
+        print('Email::::::::::::::::::::::::::::::::${emailController.text}');
         final String token = response.data['token'];
         if (token.isNotEmpty) {
           // Save the token to shared preferences.

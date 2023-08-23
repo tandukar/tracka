@@ -1,7 +1,5 @@
 import 'package:client/mainPage/trackaMainPage.dart';
-import 'package:client/provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../deleteTask/deleteTask.dart';
 import '../taskClass.dart';
@@ -9,7 +7,9 @@ import '../updateTask/updateTask.dart';
 import '../widgets/time.dart';
 
 class CardList extends StatefulWidget {
-  const CardList({Key? key}) : super(key: key);
+  final List<Task> tasks; // Receive tasks as a parameter
+
+  const CardList({Key? key, required this.tasks}) : super(key: key);
 
   @override
   State<CardList> createState() => _CardListState();
@@ -17,53 +17,52 @@ class CardList extends StatefulWidget {
 
 class _CardListState extends State<CardList> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, _) {
-        final tasks = appState.tasks;
-        final completedTasksCount =
-            tasks.where((task) => task.isChecked).length;
+    final tasks = widget.tasks; // Use the tasks received as a parameter
+    final completedTasksCount = tasks.where((task) => task.isChecked).length;
 
-        void deleteTask(BuildContext context, Task task) {
-          showDialoggg(context, task, appState);
-        }
+    void deleteTask(BuildContext context, Task task) {
+      // showDialoggg(context, task);
+    }
 
-        return ListView.builder(
-          itemCount: tasks.length + 1,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return TaskOverView(
-                key: ValueKey('TaskOverView'),
-                tasks: tasks,
-                completedTasksCount: completedTasksCount,
-              );
-            } else {
-              final task = tasks[index - 1];
-              return Padding(
-                key: ValueKey(task.taskName),
-                padding: const EdgeInsets.only(left: 13, right: 13, bottom: 5),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.13,
-                      child: CustomCard(
-                        key: ValueKey(task.taskName),
-                        task: task,
-                        deleteTask: (context) => deleteTask(context, task),
-                      ),
-                    ),
-                  ],
+    return ListView.builder(
+      itemCount: tasks.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return TaskOverView(
+            key: ValueKey('TaskOverView'),
+            tasks: tasks,
+            completedTasksCount: completedTasksCount,
+          );
+        } else {
+          final task = tasks[index - 1];
+          return Padding(
+            key: ValueKey(task.taskName),
+            padding: const EdgeInsets.only(left: 13, right: 13, bottom: 7),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.111,
+                  child: CustomCard(
+                    key: ValueKey(task.taskName),
+                    task: task,
+                    deleteTask: (context) => deleteTask(context, task),
+                  ),
                 ),
-              );
-            }
-          },
-        );
+              ],
+            ),
+          );
+        }
       },
     );
   }
 
-  Future<dynamic> showDialoggg(
-      BuildContext context, Task task, AppState appState) {
+  Future<dynamic> showDialoggg(BuildContext context, Task task) {
     return showDialog(
       barrierDismissible: false,
       context: context,
@@ -95,7 +94,7 @@ class _CardListState extends State<CardList> {
           actions: [
             TextButton(
               onPressed: () {
-                appState.deleteTask(task);
+                // appState.deleteTask(task);
                 Navigator.of(context).pop();
               },
               child: Center(child: Text('OK', style: TextStyle(fontSize: 17))),
@@ -145,7 +144,7 @@ class CustomCard extends StatelessWidget {
           ),
         ),
         child: Card(
-          elevation: 7,
+          elevation: 5,
           color: task.taskPriority == 'High'
               ? Color.fromARGB(255, 244, 84, 62)
               : task.taskPriority == 'Normal'
@@ -176,11 +175,11 @@ class CustomCard extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 5),
+                          SizedBox(height: 7),
                           Text(displayTime(task.taskTime),
                               style:
-                                  TextStyle(color: Colors.white, fontSize: 15)),
-                          Text('fafa:$taskId')
+                                  TextStyle(color: Colors.white, fontSize: 17)),
+                          // Text('fafa:$taskId')
                         ],
                       ),
                     ),
@@ -192,8 +191,8 @@ class CustomCard extends StatelessWidget {
                             : Icon(Icons.check_box_outline_blank,
                                 color: Colors.white, size: 30),
                         onPressed: () {
-                          Provider.of<AppState>(context, listen: false)
-                              .toggleCardState(task);
+                          // Provider.of<AppState>(context, listen: false)
+                          //     .toggleCardState(task);
                         },
                       ),
                     ),

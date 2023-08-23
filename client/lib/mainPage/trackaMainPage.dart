@@ -1,10 +1,10 @@
 import 'package:client/shared_preferences_util.dart';
+import 'package:dio/dio.dart';
 // import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
-import '../provider/provider.dart';
+import '../baseApi.dart';
 import '../taskClass.dart';
 import '../widgets/appBarEndDrawer.dart';
 import 'cardList.dart';
@@ -14,12 +14,9 @@ class TrackaMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AppState(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: TrackaMainPage(),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: TrackaMainPage(),
     );
   }
 }
@@ -32,45 +29,100 @@ class TrackaMainPage extends StatefulWidget {
 }
 
 class _TrackaMainPageState extends State<TrackaMainPage> {
+  late Future<List<Task>> tasksFuture;
+  List<Task> tasks = []; // Add this list to store tasks
+
   @override
   void initState() {
     sharedPreferencesUtil();
-    print('TrackaMainPage: $userIdKey');
+    getTask(context);
     super.initState();
+    tasksFuture = getTask(context); // Fetch tasks and store in tasksFuture
+  }
+
+  Future<List<Task>> getTask(BuildContext context) async {
+    print('Get Taskkkkkkkkkkkkkkkkkkk');
+    print('TrackaMainPage: $userIdKey');
+    try {
+      var response = await Dio().get(
+        '$baseApi/tasks/$userIdKey',
+        options: Options(headers: {"Content-Type": "application/json"}),
+      );
+      print(response.data);
+      if (response.statusCode == 200) {
+        print('Task fetched successfully from taskOwnerId: $userIdKey');
+        // Parse the response data and return a list of Task objects
+        List<Task> tasks = [];
+        for (var taskData in response.data) {
+          tasks.add(Task.fromJson(taskData));
+        }
+        return tasks;
+      } else if (response.statusCode == 400) {
+        print('Task creation failed');
+        // Handle error case
+        return []; // Return an empty list in case of an error
+      }
+    } on DioException catch (e) {
+      print('Errorrr: $e');
+      // Handle error case
+      return []; // Return an empty list in case of an error
+    }
+    // Return an empty list in case of failure
+    return [];
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
+      child: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/trackaMainPage.png'),
+                fit: BoxFit.cover)),
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          // backgroundColor: Color.fromARGB(255, 221, 224, 234),
+          backgroundColor: Colors.transparent,
+
+          appBar: AppBar(
+            iconTheme: IconThemeData(color: Colors.black, size: 30),
             backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              iconTheme: IconThemeData(color: Colors.black, size: 30),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              title: const Text('tracka',
-                  style: TextStyle(color: Colors.red, fontSize: 26)),
-              actions: [
-                Builder(
-                  builder: (context) => IconButton(
-                    icon: Image.asset('assets/drawerIcon.png',
-                        color: Color.fromARGB(255, 7, 36, 114),
-                        width: 25,
-                        height: 25),
-                    tooltip:
-                        MaterialLocalizations.of(context).openAppDrawerTooltip,
-                    onPressed: () => Scaffold.of(context).openEndDrawer(),
-                  ),
+            elevation: 0,
+            title: const Text('tracka',
+                style: TextStyle(color: Colors.red, fontSize: 26)),
+            actions: [
+              Builder(
+                builder: (context) => IconButton(
+                  icon: Image.asset('assets/drawerIcon.png',
+                      color: Color.fromARGB(255, 7, 36, 114),
+                      width: 25,
+                      height: 25),
+                  tooltip:
+                      MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
-              ],
-            ),
-            endDrawer: appBarEndDrawer(context),
-            body: CardList(),
-          );
-        },
+              ),
+            ],
+          ),
+          endDrawer: appBarEndDrawer(context),
+          body: FutureBuilder<List<Task>>(
+            future: tasksFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Display loading indicator while fetching data.
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No tasks available.'));
+              } else {
+                final tasks = snapshot.data!;
+
+                // Pass the list of tasks to the CardList widget
+                return CardList(tasks: tasks);
+              }
+            },
+          ),
+        ),
       ),
     );
   }
@@ -91,6 +143,11 @@ class TaskOverView extends StatefulWidget {
 }
 
 class _TaskOverViewState extends State<TaskOverView> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -122,12 +179,12 @@ class _TaskOverViewState extends State<TaskOverView> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.02),
               Row(
                 children: [
-                  Icon(Icons.check, color: Color.fromARGB(255, 54, 192, 135)),
+                  Icon(Icons.check, color: Color.fromARGB(255, 40, 141, 99)),
                   SizedBox(width: 10),
                   Text(
                     '${widget.completedTasksCount} task(s) done',
                     style: TextStyle(
-                        color: Color.fromARGB(255, 164, 164, 165),
+                        color: Color.fromARGB(255, 123, 123, 123),
                         fontSize: 20,
                         fontWeight: FontWeight.bold),
                   ),

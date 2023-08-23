@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../provider/provider.dart';
 import '../taskClass.dart';
-import '../widgets/priorityDropdown.dart';
 import '../widgets/time.dart';
 
 Future<void> updateTask(BuildContext context, Task task) async {
@@ -11,20 +8,30 @@ Future<void> updateTask(BuildContext context, Task task) async {
   String initialTime = task.taskTime;
 
   String initialDescription = task.taskDescription;
+  String selectedStatus = task.taskStatus;
+  String selectedPriority = task.taskPriority;
 
   TextEditingController taskNameController =
       TextEditingController(text: initialTitle);
   TextEditingController taskTimeController =
       TextEditingController(text: initialTime);
+
   TextEditingController taskDescriptionController =
       TextEditingController(text: initialDescription);
+
+  TextEditingController taskPriorityController =
+      TextEditingController(text: selectedPriority);
+  TextEditingController taskStatusController =
+      TextEditingController(text: selectedStatus);
 
   TimeOfDay? pickedTime;
 
   await showModalBottomSheet(
+    isScrollControlled: true,
     context: context,
     builder: (context) {
       return Container(
+        height: MediaQuery.of(context).size.height * 0.67,
         color: Colors.transparent,
         child: Container(
           decoration: BoxDecoration(
@@ -80,10 +87,21 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   ),
                 ),
                 SizedBox(height: 20),
-                PriorityDropdown(),
+                // PriorityDropdown(),
+                TextFormField(
+                  onTap: () {},
+                  controller: taskPriorityController,
+                  decoration: InputDecoration(
+                    hintText: 'Task Priority',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    prefixIcon: Icon(Icons.task),
+                  ),
+                ),
                 SizedBox(height: 20),
                 TextFormField(
-                  // controller: taskDescriptionController,
+                  controller: taskDescriptionController,
                   decoration: InputDecoration(
                     hintText: 'Description',
                     border: OutlineInputBorder(
@@ -93,28 +111,21 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   ),
                 ),
                 SizedBox(height: 20),
+                // TaskStatusDropdown(),
+                TextFormField(
+                  controller: taskStatusController,
+                  decoration: InputDecoration(
+                    hintText: 'Task Status',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    prefixIcon: Icon(Icons.task_alt),
+                  ),
+                ),
+                SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      String updatedTitle = taskNameController.text;
-                      String updatedTime = taskTimeController.text;
-                      String updatedDescription =
-                          taskDescriptionController.text;
-
-                      if (updatedTitle.isNotEmpty && updatedTime.isNotEmpty) {
-                        Task updatedTask = Task(
-                          updatedTitle,
-                          updatedTime,
-                          updatedDescription,
-                          isChecked: task.isChecked,
-                        );
-
-                        Provider.of<AppState>(context, listen: false)
-                            .editTask(task, updatedTask);
-                      }
-
-                      Navigator.of(context).pop();
-                    },
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
