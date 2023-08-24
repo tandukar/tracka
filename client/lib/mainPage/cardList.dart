@@ -27,7 +27,7 @@ class _CardListState extends State<CardList> {
     final completedTasksCount = tasks.where((task) => task.isChecked).length;
 
     void deleteTask(BuildContext context, Task task) {
-      // showDialoggg(context, task);
+      deleteTaskFunc(context, task);
     }
 
     return ListView.builder(
@@ -62,7 +62,7 @@ class _CardListState extends State<CardList> {
     );
   }
 
-  Future<dynamic> showDialoggg(BuildContext context, Task task) {
+  Future<dynamic> deleteTaskFunc(BuildContext context, Task task) {
     return showDialog(
       barrierDismissible: false,
       context: context,
@@ -85,7 +85,7 @@ class _CardListState extends State<CardList> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     )),
-                TextSpan(text: ' deleted'),
+                TextSpan(text: ' deleted\nPlease refresh'),
               ],
             ),
             textAlign: TextAlign.center,
@@ -106,7 +106,7 @@ class _CardListState extends State<CardList> {
   }
 }
 
-class CustomCard extends StatelessWidget {
+class CustomCard extends StatefulWidget {
   final Task task;
   final Function(BuildContext) deleteTask;
 
@@ -117,27 +117,32 @@ class CustomCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CustomCard> createState() => _CustomCardState();
+}
+
+class _CustomCardState extends State<CustomCard> {
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        updateTask(context, task);
+        updateTask(context, widget.task);
       },
       child: Dismissible(
-        key: ValueKey(task.taskName),
+        key: ValueKey(widget.task.taskName),
         direction: DismissDirection.endToStart,
         confirmDismiss: (DismissDirection direction) async {
-          return await deleteATask(context);
+          final deleteTask = widget.task.id;
+          return await deleteATask(context, deleteTask);
         },
         onDismissed: (direction) {
           bool shouldDelete = direction == DismissDirection.endToStart;
           if (shouldDelete) {
-            deleteTask(context);
+            widget.deleteTask(context);
           }
         },
         background: Container(
           decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(20),
+            color: Color.fromARGB(0, 244, 67, 54),
           ),
           child: Padding(
             padding: const EdgeInsets.only(right: 20),
@@ -145,9 +150,9 @@ class CustomCard extends StatelessWidget {
         ),
         child: Card(
           elevation: 5,
-          color: task.taskPriority == 'High'
+          color: widget.task.taskPriority == 'High'
               ? Color.fromARGB(255, 244, 84, 62)
-              : task.taskPriority == 'Normal'
+              : widget.task.taskPriority == 'Normal'
                   ? Color.fromARGB(255, 39, 188, 126)
                   : Color.fromARGB(255, 102, 168, 216),
           shape: RoundedRectangleBorder(
@@ -167,8 +172,9 @@ class CustomCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Text(task.id),
                           Text(
-                            task.taskName,
+                            widget.task.taskName,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 21,
@@ -176,7 +182,7 @@ class CustomCard extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: 7),
-                          Text(displayTime(task.taskTime),
+                          Text(displayTime(widget.task.taskTime),
                               style:
                                   TextStyle(color: Colors.white, fontSize: 17)),
                           // Text('fafa:$taskId')
@@ -185,14 +191,14 @@ class CustomCard extends StatelessWidget {
                     ),
                     Expanded(
                       child: IconButton(
-                        icon: task.isChecked
+                        icon: widget.task.isChecked
                             ? Icon(Icons.check_box,
                                 color: Colors.white, size: 30)
                             : Icon(Icons.check_box_outline_blank,
                                 color: Colors.white, size: 30),
                         onPressed: () {
-                          // Provider.of<AppState>(context, listen: false)
-                          //     .toggleCardState(task);
+                          // Provider.of<AppState>(context, listen: false).toggleCardState(task)/;
+                          toggleCardState(widget.task);
                         },
                       ),
                     ),
@@ -206,5 +212,11 @@ class CustomCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void toggleCardState(Task task) {
+    setState(() {
+      task.isChecked = !task.isChecked;
+    });
   }
 }

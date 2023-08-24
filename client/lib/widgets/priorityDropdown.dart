@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-const List<String> priorityList = <String>['Low', 'Normal', 'High'];
+const List<String> priorityList = <String>[
+  'Normal',
+  'Low',
+  'High',
+];
 String selectedPriority = priorityList.first;
 
 class PriorityDropdown extends StatefulWidget {
@@ -15,19 +19,21 @@ class _PriorityDropdownState extends State<PriorityDropdown> {
   Widget build(BuildContext context) {
     return InputDecorator(
       decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.deepPurpleAccent),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 17, vertical: 3),
-        // labelText: 'Priority',
-        hintText: 'Priority',
-      ),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.deepPurpleAccent),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 17, vertical: 3),
+          // labelText: 'Priority',
+          labelText: 'Task Priority',
+          labelStyle: TextStyle(
+            fontSize: 19,
+            color: Colors.deepPurpleAccent,
+          )),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: selectedPriority,
           icon: const Icon(Icons.arrow_drop_down, size: 30),
-          style: const TextStyle(color: Colors.deepPurple),
           onChanged: (String? value) {
             // This is called when the user selects an item.
             setState(() {

@@ -57,8 +57,13 @@ Future<dynamic> createTask(BuildContext context) {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              duration: Duration(seconds: 3),
-              content: Text('Task created successfully')),
+            duration: Duration(minutes: 2),
+            content: Text('Task created successfully\nPlease refresh'),
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+            ),
+          ),
         );
       } else if (response.statusCode == 400) {
         print('Task creation failed');
@@ -98,11 +103,11 @@ Future<dynamic> createTask(BuildContext context) {
                 taskName(),
                 SizedBox(height: 15),
                 taskTime(context),
-                SizedBox(height: 15),
+                SizedBox(height: 19),
                 PriorityDropdown(),
                 SizedBox(height: 15),
                 taskDescription(),
-                SizedBox(height: 15),
+                SizedBox(height: 19),
                 TaskStatusDropdown(),
                 SizedBox(height: 15),
                 addTaskButton(context, addTask),

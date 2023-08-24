@@ -1,6 +1,7 @@
 List<Task> tasks = [];
 
 class Task {
+  String id;
   String taskName;
   String taskStatus;
   String taskPriority;
@@ -10,6 +11,7 @@ class Task {
   bool isChecked;
 
   Task({
+    required this.id,
     required this.taskName,
     required this.taskStatus,
     required this.taskPriority,
@@ -21,6 +23,7 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
+      id: json['_id'],
       taskName: json['taskName'],
       taskStatus: json['taskStatus'],
       taskPriority: json['taskPriority'],

@@ -53,6 +53,7 @@ Future<void> updateTask(BuildContext context, Task task) async {
                   ),
                 ),
                 SizedBox(height: 20),
+                // Text(task.id),
                 TextFormField(
                   controller: taskNameController,
                   decoration: InputDecoration(
@@ -96,7 +97,7 @@ Future<void> updateTask(BuildContext context, Task task) async {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    prefixIcon: Icon(Icons.task),
+                    prefixIcon: Icon(Icons.low_priority),
                   ),
                 ),
                 SizedBox(height: 20),

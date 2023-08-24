@@ -1,6 +1,5 @@
 import 'package:client/shared_preferences_util.dart';
 import 'package:dio/dio.dart';
-// import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -40,6 +39,71 @@ class _TrackaMainPageState extends State<TrackaMainPage> {
     tasksFuture = getTask(context); // Fetch tasks and store in tasksFuture
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {
+          tasksFuture = getTask(context);
+        });
+      },
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/trackaMainPage.png'),
+                  fit: BoxFit.cover)),
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              iconTheme: IconThemeData(color: Colors.black, size: 30),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text('tracka',
+                  style: TextStyle(
+                      color: Color.fromARGB(255, 255, 17, 0), fontSize: 26)),
+              actions: [
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: Image.asset('assets/drawerIcon.png',
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        width: 23,
+                        height: 23),
+                    tooltip:
+                        MaterialLocalizations.of(context).openAppDrawerTooltip,
+                    onPressed: () => Scaffold.of(context).openEndDrawer(),
+                  ),
+                ),
+              ],
+            ),
+            endDrawer: appBarEndDrawer(context),
+            body: Padding(
+              padding: const EdgeInsets.only(bottom: 3),
+              child: FutureBuilder<List<Task>>(
+                future: tasksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator(); // Display loading indicator while fetching data.
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No tasks available.'));
+                  } else {
+                    final tasks = snapshot.data!;
+
+                    // Pass the list of tasks to the CardList widget
+                    return CardList(tasks: tasks);
+                  }
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<List<Task>> getTask(BuildContext context) async {
     print('Get Taskkkkkkkkkkkkkkkkkkk');
     print('TrackaMainPage: $userIdKey');
@@ -70,62 +134,6 @@ class _TrackaMainPageState extends State<TrackaMainPage> {
     // Return an empty list in case of failure
     return [];
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/trackaMainPage.png'),
-                fit: BoxFit.cover)),
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          // backgroundColor: Color.fromARGB(255, 221, 224, 234),
-          backgroundColor: Colors.transparent,
-
-          appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.black, size: 30),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: const Text('tracka',
-                style: TextStyle(color: Colors.red, fontSize: 26)),
-            actions: [
-              Builder(
-                builder: (context) => IconButton(
-                  icon: Image.asset('assets/drawerIcon.png',
-                      color: Color.fromARGB(255, 7, 36, 114),
-                      width: 25,
-                      height: 25),
-                  tooltip:
-                      MaterialLocalizations.of(context).openAppDrawerTooltip,
-                  onPressed: () => Scaffold.of(context).openEndDrawer(),
-                ),
-              ),
-            ],
-          ),
-          endDrawer: appBarEndDrawer(context),
-          body: FutureBuilder<List<Task>>(
-            future: tasksFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // Display loading indicator while fetching data.
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No tasks available.'));
-              } else {
-                final tasks = snapshot.data!;
-
-                // Pass the list of tasks to the CardList widget
-                return CardList(tasks: tasks);
-              }
-            },
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class TaskOverView extends StatefulWidget {
@@ -152,48 +160,52 @@ class _TaskOverViewState extends State<TaskOverView> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 37),
-      child: ValueListenableBuilder<int>(
-        valueListenable: ValueNotifier(widget.completedTasksCount),
-        builder: (context, value, child) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-              RichText(
-                  text: TextSpan(children: [
-                TextSpan(
-                    text: '${widget.tasks.length}',
-                    style: TextStyle(
-                        fontSize: 100,
-                        color: Color.fromARGB(255, 233, 90, 90))),
-                TextSpan(
-                    text: '\ntasks for\ntoday',
-                    style: GoogleFonts.basic(
-                      textStyle: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 7, 36, 114),
-                      ),
-                    )),
-              ])),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-              Row(
-                children: [
-                  Icon(Icons.check, color: Color.fromARGB(255, 40, 141, 99)),
-                  SizedBox(width: 10),
-                  Text(
-                    '${widget.completedTasksCount} task(s) done',
-                    style: TextStyle(
-                        color: Color.fromARGB(255, 123, 123, 123),
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          RichText(
+              text: TextSpan(children: [
+            TextSpan(
+                text: '${widget.tasks.length}',
+                style: TextStyle(
+                    fontSize: 100, color: Color.fromARGB(255, 233, 90, 90))),
+            TextSpan(
+                text: '\ntasks for\ntoday',
+                style: GoogleFonts.basic(
+                  textStyle: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 7, 36, 114),
                   ),
-                ],
+                )),
+          ])),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+          Row(
+            children: [
+              Icon(Icons.check, color: Color.fromARGB(255, 40, 141, 99)),
+              SizedBox(width: 10),
+              Text(
+                '${widget.completedTasksCount} task(s) done',
+                style: TextStyle(
+                    color: Color.fromARGB(255, 123, 123, 123),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             ],
-          );
-        },
+          ),
+          ValueListenableBuilder<int>(
+            valueListenable: ValueNotifier(widget.completedTasksCount),
+            builder: (context, value, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
