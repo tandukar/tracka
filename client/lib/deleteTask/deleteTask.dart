@@ -1,10 +1,16 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-Future<bool?> deleteATask(BuildContext context) {
+import '../baseApi.dart';
+
+final Dio _dio = Dio();
+
+Future<bool?> deleteATask(BuildContext context, taskToDelete) async {
   return showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
         ),
@@ -22,7 +28,14 @@ Future<bool?> deleteATask(BuildContext context) {
                 child: Text('Cancel', style: TextStyle(fontSize: 17)),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: () async {
+                  final response =
+                      await _dio.delete('$baseApi/tasks/$taskToDelete');
+                  if (response.statusCode == 200) {
+                    print(taskToDelete);
+                    Navigator.of(context).pop(true);
+                  }
+                },
                 child: Text('Delete', style: TextStyle(fontSize: 17)),
               ),
             ],

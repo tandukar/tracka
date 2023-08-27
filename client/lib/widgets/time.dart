@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
-import '../provider/provider.dart';
+import '../createTask/createTask.dart';
 
 String formatTime(TimeOfDay timeOfDay) {
   final now = DateTime.now();
@@ -25,8 +24,7 @@ void onTapTime(context) async {
 
   if (pickedTime != null) {
     String formattedTime = formatTime(pickedTime);
-    Provider.of<AppState>(context, listen: false).taskTimeController.text =
-        formattedTime;
+    taskTimeController.text = formattedTime;
   }
 }
 

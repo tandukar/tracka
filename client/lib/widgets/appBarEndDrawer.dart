@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
-import 'package:provider/provider.dart';
 
 import '../auth/login.dart';
 import '../createTask/createTask.dart';
-import '../provider/provider.dart';
 
 Drawer appBarEndDrawer(BuildContext context) {
   return Drawer(
@@ -74,8 +72,9 @@ Drawer appBarEndDrawer(BuildContext context) {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    Provider.of<AppState>(context, listen: false)
-                        .deleteAllTasks();
+                    // delete all tasks
+                    // Provider.of<AppState>(context, listen: false)
+                    //     .deleteAllTasks();
                   },
                 ),
               ),
@@ -92,10 +91,14 @@ Drawer appBarEndDrawer(BuildContext context) {
                       style:
                           TextStyle(fontSize: 19, fontWeight: FontWeight.bold)),
                   onTap: () async {
+                    // await clearTokenFromSharedPreferences();
+                    // SharedPreferences prefs =
+                    //     await SharedPreferences.getInstance();
+
+                    // prefs.remove('jwtToken');
+
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) => Login()));
-                    // SharedPreferences prefs = await SharedPreferences.getInstance();
-                    // prefs.remove('jwtToken');
                   },
                 ),
               ),

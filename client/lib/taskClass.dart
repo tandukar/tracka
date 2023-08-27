@@ -1,45 +1,35 @@
-import 'widgets/priorityDropdown.dart';
-import 'widgets/taskStatusDropdown.dart';
-
-var taskId = '';
+List<Task> tasks = [];
 
 class Task {
-  final String _id = taskId;
-  final String taskName;
-  final String taskTime;
-  final String taskDescription;
-  final String taskStatus = selectedStatus;
-  final String taskPriority = selectedPriority;
+  String id;
+  String taskName;
+  String taskStatus;
+  String taskPriority;
+  String taskDescription;
+  String taskTime;
+  String taskOwnerId;
   bool isChecked;
 
-  Task(this.taskName, this.taskTime, this.taskDescription,
-      {this.isChecked = false});
+  Task({
+    required this.id,
+    required this.taskName,
+    required this.taskStatus,
+    required this.taskPriority,
+    required this.taskDescription,
+    required this.taskTime,
+    required this.taskOwnerId,
+    this.isChecked = false,
+  });
 
-  @override
-  String toString() {
-    return 'Task{_id:$taskId , taskName: $taskName, taskTime: $taskTime,isChecked: $isChecked, taskDescription: $taskDescription, taskStatus: $taskStatus, taskPriority: $taskPriority,}';
-  }
-
-  // Method to convert Task to a Map (JSON representation)
-  Map<String, dynamic> toMap() {
-    return {
-      '_id': _id,
-      'taskName': taskName,
-      'taskTime': taskTime,
-      'description': taskDescription,
-      'taskStatus': taskStatus,
-      'taskPriority': taskPriority,
-      'isChecked': isChecked,
-    };
-  }
-
-  // Static method to create a Task object from a Map
-  static Task fromMap(Map<String, dynamic> map) {
+  factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
-      map['taskName'],
-      map['time'],
-      map['description'],
-      isChecked: map['isChecked'],
+      id: json['_id'],
+      taskName: json['taskName'],
+      taskStatus: json['taskStatus'],
+      taskPriority: json['taskPriority'],
+      taskDescription: json['taskDescription'],
+      taskTime: json['taskTime'],
+      taskOwnerId: json['taskOwnerId'],
     );
   }
 }

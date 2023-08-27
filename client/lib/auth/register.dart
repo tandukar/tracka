@@ -58,22 +58,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/registerBg.png"),
-          fit: BoxFit.fill,
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/registerBg.png"),
+            fit: BoxFit.fill,
+          ),
         ),
-      ),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          child: Form(
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          backgroundColor: Colors.transparent,
+          body: Form(
             key: widget.formKey,
             child: Column(
               children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.24),
                 SizedBox(
                   child: Card(
                     elevation: 0,
@@ -88,6 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             style: TextStyle(
                               fontSize: 33,
                               fontWeight: FontWeight.w700,
+                              color: Colors.green.shade800,
                             ),
                           ),
                           SizedBox(height: 30),
