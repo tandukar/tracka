@@ -47,7 +47,6 @@ exports.getTasksById = async(req, res) => {
 exports.updateTask = async(req, res) => {
     try {
         const { id, taskId } = req.query;
-
         const { taskName, taskDescription, taskStatus, taskPriority, taskTime } =
         req.body;
 
@@ -55,13 +54,10 @@ exports.updateTask = async(req, res) => {
 
         const user = await User.findById(id);
         if (!user) return res.status(400).json({ message: "User not found!" });
-
         const task = await Task.find({ taskOwnerId: id });
-        const taskIds = task.map(task => task._id.toString());
-        // console.log(taskIds)
-
-        if (!taskIds.includes(taskId)) return res.status(400).json({ message: "Task not found!" });
-
+        const taskIds = task.map((task) => task._id.toString());
+        if (!taskIds.includes(taskId))
+            return res.status(400).json({ message: "Task not found!" });
         const update = await Task.findByIdAndUpdate(req.query.taskId, {
             taskName,
             taskDescription,
@@ -71,6 +67,33 @@ exports.updateTask = async(req, res) => {
         });
         if (!update) return res.status(400).json({ message: "Task not updated!" });
         return res.status(200).json({ message: "Task updated successfully!" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.bulkStatusUpdate = async(req, res) => {
+    let foundTaskIds = [];
+    try {
+        const { taskIds } = req.body;
+        const { status } = req.params;
+        console.log(req.params.status);
+        const tasks = await Task.find({ _id: { $in: taskIds } });
+        console.log("Found Tasks:", tasks);
+        if (!tasks || tasks.length !== taskIds.length) {
+            foundTaskIds = tasks.map((task) => task._id.toString());
+            const notFoundTaskIds = taskIds.filter(
+                (id) => !foundTaskIds.includes(id)
+            );
+            console.log("Tasks Not Found:", notFoundTaskIds);
+            console.log("Tasks Found:", foundTaskIds);
+            if (notFoundTaskIds.length > 0) {
+                console.log("Some tasks not found!");
+            }
+        }
+        const update = await Task.updateMany({ _id: { $in: foundTaskIds } }, { taskStatus: status });
+        return res.status(200).json({ message: "Tasks updated successfully!" });
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: "Internal server error" });
@@ -87,10 +110,8 @@ exports.createTask = async(req, res) => {
             taskPriority,
             taskTime,
         } = req.body;
-
         const user = await User.findById(taskOwnerId);
         if (!user) return res.status(400).json({ message: "User not found!" });
-
         const newTask = await Task({
             taskName,
             taskOwnerId,
