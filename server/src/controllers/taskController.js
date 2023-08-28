@@ -73,6 +73,26 @@ exports.updateTask = async(req, res) => {
     }
 };
 
+
+exports.searchTaskByName = async(req, res) => {
+    console.log(req.query);
+    try {
+        const { userId, taskName } = req.query; // Use req.query instead of req.params
+        const user = await User.findById(userId);
+        const task = await Task.find({ taskOwnerId: userId, taskName: taskName });
+        console.log(user)
+
+        // if (!task || task.length === 0) {
+        //     return res.status(400).json({ message: "Task not found!" });
+        // }
+        if (!task) return res.status(400).json({ message: "Task not found!" });
+        return res.status(200).json(task);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 exports.bulkStatusUpdate = async(req, res) => {
     let foundTaskIds = [];
     try {
