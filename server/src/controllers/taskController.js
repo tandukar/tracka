@@ -14,6 +14,26 @@ exports.getTasks = async(req, res) => {
     }
 };
 
+exports.getTasksByDateRange = async(req, res) => {
+    try {
+
+        const { startDate, endDate } = req.body;
+        console.log(req.body);
+        const tasks = await Task.find({
+            taskTime: {
+                $gte: startDate,
+                $lte: endDate
+            }
+        });
+        if (tasks.length === 0) return res.status(200).json({ message: "No tasks for the day was found!" })
+        return res.status(200).json(tasks);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 exports.deleteTask = async(req, res) => {
     try {
         console.log(req.params);

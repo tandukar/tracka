@@ -14,6 +14,7 @@ router.post("/create", taskController.createTask);
 router.patch("/", taskController.updateTask);
 router.get("/search", taskController.searchTaskByName);
 router.get("/filter", taskController.filterTasks);
+router.get('/get-tasks-by-date-range', taskController.getTasksByDateRange);
 router.get("/:id", taskController.getTasksById);
 router.get("/", taskController.getTasks);
 router.delete("/:id", taskController.deleteTask);
